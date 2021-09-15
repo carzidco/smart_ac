@@ -1,0 +1,22 @@
+<div class="container receipt" style="width:400px;">
+  <div class="row">
+    <div class="jumbotron" style="background: white; border-radius:20px;">
+      <h2>Device Info</h2>
+      <h3>Serial Number</h3>
+      <p ><%= @device.serial_number %></p>
+      <h3>Firmware Version</h3>
+      <p ><stron>$ </stron><%= @device.firmware_version %></p>
+      <h3>Date</h3>
+      <p ><%= @device.created_at %></p>
+      <a href="/devices/<%= @device.id %>/edit"><span class="glyphicon glyphicon-pencil"></span> Edit Device </a>
+      <hr>
+      <a href="/devices"><span class="glyphicon glyphicon-th-list"></span> View Devices</a>
+    </div>
+  </div> 
+</div>
+<div class="row">
+  <form action="/devices/<%= @device.id %>/delete" method="post">
+      <input type="hidden" id="hidden" name="_method" value="DELETE">
+    <button type="submit" class="btn btn-danger">Delete Device</button>
+  </form>
+</div>
