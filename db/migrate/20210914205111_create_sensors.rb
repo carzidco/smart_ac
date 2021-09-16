@@ -7,6 +7,7 @@ class CreateSensors < ActiveRecord::Migration
       t.string  :device_health_status
       t.datetime :created_at
       t.integer :device_id
+      t.boolean :safe
     end
   end
 end

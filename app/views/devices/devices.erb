@@ -15,7 +15,6 @@
         <th><h3>Date Created</h3></th>
         <th><h3>Firmware Version</h3></th>
         <th><h3></h3></th>
-        <th><h3></h3></th>
       </tr>
         <% current_user.devices_sort_by_date.each do |device| %>
           <tr style="text-align:left;">
@@ -23,7 +22,6 @@
             <td><%= device.created_at %></td>
             <td><%= device.firmware_version %></td>
             <td><a href="devices/<%= device.serial_number %>/sensors">Sensors <span class="glyphicon glyphicon-alert"></span></a></td>
-            <td><a href="devices/<%= device.id %>/edit">Edit <span class="glyphicon glyphicon-pencil"></span></a></td>
           </tr>
         <% end %>
       </table>

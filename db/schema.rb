@@ -26,6 +26,7 @@ ActiveRecord::Schema.define(version: 20210914205111) do
     t.string   "device_health_status"
     t.datetime "created_at"
     t.integer  "device_id"
+    t.boolean  "safe"
   end
 
   create_table "users", force: :cascade do |t|

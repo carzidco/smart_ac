@@ -1,6 +1,12 @@
-<h1 style="color: black; margin: 30px 10px;">Sensors registered for <%= @device.serial_number %></h1>
+<h1 style="color: black; margin: 30px 10px;">All Sensors</h1>
 
 <div class="container" >
+  <div class="form-group">
+    <select id="filter_sensors" onChange="sensorSearch()" class="form-control">
+      <option value="false">Display all</option>
+      <option value="true">Only Alerts</option>
+    </select>
+  </div>
   <div class="row">
     <div class="jumbotron" style="background: white; border-radius:20px;">
       <% if flash.has?(:message) %>
@@ -9,7 +15,7 @@
           <p><%= flash[:message] %> </p>
       </div>
       <% end %>
-      <table class="table table-hover table-striped" >
+      <table id="searchableTable" class="table table-hover table-striped" >
       <tr class="info">
         <th><h3>Sensor Id</h3></th>
         <th><h3>Temperature</h3></th>

@@ -70,18 +70,18 @@ class DevicesController < ApplicationController
 
   # Create a sensor for a device
   post '/devices/sensor' do
-    binding.pry
     if params[:temperature].empty? || params[:air_humidity_percentage].empty? || params[:carbon_monoxide_level].empty? || params[:device_health_status].empty?
       flash[:message] = "Please don't leave blank content"
       redirect to "/devices/sensor/new"
     else
       @expense = Sensor.create(
         temperature: params["temperature"], 
-        air_humidity_percentage: params["air_humidity_percentage"], 
-        carbon_monoxide_level: params["carbon_monoxide_level"],
+        air_humidity_percentage: params["air_humidity_percentage"].to_f, 
+        carbon_monoxide_level: params["carbon_monoxide_level"].to_f,
         device_health_status: params["device_health_status"],
         created_at: Time.now,
-        device_id: params["device_id"]
+        device_id: params["device_id"],
+        safe: params["carbon_monoxide_level"].to_f > 9 ? false : true
       )
       redirect to "/devices"
     end
@@ -110,6 +110,7 @@ class DevicesController < ApplicationController
         carbon_monoxide_level: body_params["carbon_monoxide_level"],
         device_health_status: body_params["device_health_status"],
         created_at: body_params["created_at"],
+        safe: body_params["carbon_monoxide_level"] > 9 ? false : true,
         device_id: @device.id
       )
       status 201
@@ -138,4 +139,24 @@ class DevicesController < ApplicationController
     return json(sensors)
   end
 
+  get '/devices/sensors/alerts' do
+    sensors = Sensor.where('carbon_monoxide_level > ?', 9).where('safe = ?', false)
+    return json(sensors)
+  end
+
+  post '/devices/sensors/:id/set_safe' do
+    sensor = Sensor.find(params[:id])
+    sensor.safe = true
+    sensor.save
+    return json(sensor)
+  end
+
+  get '/sensors' do
+    if logged_in?
+      @sensors = Sensor.all
+      erb :'devices/list_sensors'
+    else
+      redirect_if_not_logged_in
+    end
+  end
 end
