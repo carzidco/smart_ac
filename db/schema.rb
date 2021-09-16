@@ -10,13 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210913153847) do
+ActiveRecord::Schema.define(version: 20210914205111) do
 
   create_table "devices", force: :cascade do |t|
     t.string   "serial_number"
     t.datetime "created_at"
     t.string   "firmware_version"
     t.integer  "user_id"
+  end
+
+  create_table "sensors", force: :cascade do |t|
+    t.string   "temperature"
+    t.float    "air_humidity_percentage"
+    t.float    "carbon_monoxide_level"
+    t.string   "device_health_status"
+    t.datetime "created_at"
+    t.integer  "device_id"
   end
 
   create_table "users", force: :cascade do |t|

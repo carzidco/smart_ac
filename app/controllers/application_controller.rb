@@ -39,10 +39,6 @@ class ApplicationController < Sinatra::Base
       redirect to "/devices"
     end
 
-    def redirect_to_categories
-      redirect to "/categories"
-    end
-
     def api_response?
       request.env["CONTENT_TYPE"].present?
     end

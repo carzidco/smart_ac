@@ -1,3 +1,8 @@
+#TODO: 
+# Using something like GraphQL could solve the duplication about api and web endpoints
+# Another nice solution could be create a base class that infer the request origin and get the result based on it
+# Finally a cleaner way could be create a js interface like a ServiceBase.js file and hit the api via axios or fetch an standardized it using only API call for everything
+
 class UsersController < ApplicationController
 
   # loads the signup page

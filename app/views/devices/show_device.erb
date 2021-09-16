@@ -5,7 +5,7 @@
       <h3>Serial Number</h3>
       <p ><%= @device.serial_number %></p>
       <h3>Firmware Version</h3>
-      <p ><stron>$ </stron><%= @device.firmware_version %></p>
+      <p><%= @device.firmware_version %></p>
       <h3>Date</h3>
       <p ><%= @device.created_at %></p>
       <a href="/devices/<%= @device.id %>/edit"><span class="glyphicon glyphicon-pencil"></span> Edit Device </a>
