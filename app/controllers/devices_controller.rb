@@ -59,6 +59,34 @@ class DevicesController < ApplicationController
     end
   end
 
+  get '/devices/sensor/new' do
+    if logged_in?
+      @devices = Device.all
+      erb :'/devices/create_sensor'
+    else
+      redirect_if_not_logged_in
+    end
+  end
+
+  # Create a sensor for a device
+  post '/devices/sensor' do
+    binding.pry
+    if params[:temperature].empty? || params[:air_humidity_percentage].empty? || params[:carbon_monoxide_level].empty? || params[:device_health_status].empty?
+      flash[:message] = "Please don't leave blank content"
+      redirect to "/devices/sensor/new"
+    else
+      @expense = Sensor.create(
+        temperature: params["temperature"], 
+        air_humidity_percentage: params["air_humidity_percentage"], 
+        carbon_monoxide_level: params["carbon_monoxide_level"],
+        device_health_status: params["device_health_status"],
+        created_at: Time.now,
+        device_id: params["device_id"]
+      )
+      redirect to "/devices"
+    end
+  end
+
   # Create sensors for a device API
   post '/api/devices/send_sensors_info/:serial_number' do
     serial_number = params["serial_number"]

@@ -56,7 +56,7 @@ class UsersController < ApplicationController
       end
 
       @user = User.create(username: params["username"], email: params["email"], password: params["password"])
-      datetbc = Time.now.to_i
+      datetbc = Time.now
       @device = Device.create(serial_number: params["serial_number"], created_at: datetbc, firmware_version: params["firmware_version"], user_id:@user.id)
       session[:user_id] = @user.id
 
