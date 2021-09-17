@@ -5,12 +5,9 @@
     line-height: 1.5;
 }
 
-
-select[name="category_name"],
 input[type="text"],
 input[type="password"],
 input[type="email"],
-input[type="expense"],
 input[type="date"],
 textarea,
 textarea.form-control {
@@ -41,7 +38,6 @@ textarea.form-control {
 input[type="text"]:focus,
 input[type="password"]:focus,
 input[type="email"]:focus,
-input[type="expense"]:focus,
 textarea:focus,
 textarea.form-control:focus {
 	outline: 0;

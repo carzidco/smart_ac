@@ -26,16 +26,17 @@
         <th><h3>Check to Safe</h3></th>
       </tr>
         <% @sensors.each do |sensor| %>
-          <tr style="text-align:left; <%= sensor.carbon_monoxide_level > 9 && !sensor.safe ? 'background-color: red; color: white' : '' %>">
+          <tr style="text-align:left; <%= (['needs_service','needs_new_filter','gas_leak'].include?(sensor.device_health_status) || sensor.carbon_monoxide_level > 9) && !sensor.safe ? 'background-color: red; color: white' : '' %>">
             <td><%= sensor.id %></td>
             <td><%= sensor.temperature %></td>
             <td><%= sensor.air_humidity_percentage %></td>
             <td><%= sensor.carbon_monoxide_level %></td>
             <td><%= sensor.device_health_status %></td>
+            <td><%= sensor.safe %></td>
             <td><%= sensor.created_at %></td>
-            <% if sensor.carbon_monoxide_level > 9 && !sensor.safe %>
+            <% if (['needs_service','needs_new_filter','gas_leak'].include?(sensor.device_health_status) || sensor.carbon_monoxide_level > 9) && !sensor.safe %>
               <td><button type="button" class="btn-success" onclick="setSensorSafe(<%= sensor.id %>)">Check</button></td>
-            <% elsif sensor.carbon_monoxide_level > 9 && sensor.safe %>
+            <% elsif (['needs_service','needs_new_filter','gas_leak'].include?(sensor.device_health_status) || sensor.carbon_monoxide_level > 9) && sensor.safe %>
               <td>OK - Handled</td>
             <% else %>
               <td>OK</td>

@@ -15,7 +15,6 @@ class UsersController < ApplicationController
     end
   end
 
-  # creates a general category on initialization
   post '/signup' do
     if params["username"].empty? || params["email"].empty? || params["password"].empty?
       flash[:message] = "Pleae don't leave blank content"
@@ -66,7 +65,6 @@ class UsersController < ApplicationController
   end
 
   # loads the login page
-  # loads expenses page after login
   # does not let user view login page if already logged in
   get '/login' do
     if logged_in?
@@ -76,7 +74,6 @@ class UsersController < ApplicationController
     end
   end
 
-  # loads expenses if username exists and password is authenticated
   post '/login' do
     @user = User.find_by(username:params[:username])
     if @user && @user.authenticate(params[:password])

@@ -21,7 +21,7 @@
                     <form  action="/devices/sensor" method="post" >
 
                       <div class="form-group">
-                        <label  style="color: white; -webkit-font-smoothing: antialiased !important;" for="category">Device</label>
+                        <label  style="color: white; -webkit-font-smoothing: antialiased !important;" for="device_id">Device</label>
                         <select name="device_id" class="form-control">
                               <% @devices.each do |device| %>
                                 <option value="<%= device.id %>" name="device_id"><%= device.serial_number %></option>

@@ -41,21 +41,7 @@ class DevicesController < ApplicationController
       device = Device.find(params[:id])
       return json(device)
     else
-      redirect_if_not_logged_in
-    end
-  end
-
-  # Create sensors for a device
-  post '/devices/send_sensors_info/:serial_number' do
-    if params[:description].empty? || params[:amount].empty? || params[:date].empty? || params[:category_name].empty?
-      flash[:message] = "Please don't leave blank content"
-      redirect to "/devices/new"
-    else
-      @user = current_user
-      @category = @user.categories.find_or_create_by(name:params[:category_name])
-      @category.user_id = @user.id
-      @expense = Expense.create(description:params[:description], amount:params[:amount], date:params[:date], category_id:@category.id, user_id:@user.id)
-      redirect to "/devices/#{@expense.id}"
+      user_not_authenticated
     end
   end
 
@@ -74,14 +60,15 @@ class DevicesController < ApplicationController
       flash[:message] = "Please don't leave blank content"
       redirect to "/devices/sensor/new"
     else
-      @expense = Sensor.create(
+      binding.pry
+      @sensor = Sensor.create(
         temperature: params["temperature"], 
         air_humidity_percentage: params["air_humidity_percentage"].to_f, 
         carbon_monoxide_level: params["carbon_monoxide_level"].to_f,
         device_health_status: params["device_health_status"],
         created_at: Time.now,
         device_id: params["device_id"],
-        safe: params["carbon_monoxide_level"].to_f > 9 ? false : true
+        safe: params["carbon_monoxide_level"].to_f > 9 || device_health_status_to_check.include?(params["device_health_status"])  ? false : true
       )
       redirect to "/devices"
     end
@@ -91,28 +78,24 @@ class DevicesController < ApplicationController
   post '/api/devices/send_sensors_info/:serial_number' do
     serial_number = params["serial_number"]
     body_params = JSON.parse request.body.read
-    if ( body_params["temperature"].blank? ||
-      body_params["air_humidity_percentage"].blank? ||
-      body_params["carbon_monoxide_level"].blank? ||
-      body_params["device_health_status"].blank? ||
-      body_params["created_at"].blank?
-    )
-    result = {
-      :message => "Pleae don't leave blank content"
-    }
-    return json(result)
+
+    # Validation for a single sensor
+    if (!body_params.is_a?(Array) && is_sensor_invalid?(body_params))
+      result = {
+        :message => "Pleae don't leave blank content"
+      }
+      return json(result)
     else
-      @user = current_user
+      check_user_logged_in(body_params)
       @device = Device.find_by!(serial_number: serial_number)
-      @sensor = Sensor.create(
-        temperature: body_params["temperature"],
-        air_humidity_percentage: body_params["air_humidity_percentage"],
-        carbon_monoxide_level: body_params["carbon_monoxide_level"],
-        device_health_status: body_params["device_health_status"],
-        created_at: body_params["created_at"],
-        safe: body_params["carbon_monoxide_level"] > 9 ? false : true,
-        device_id: @device.id
-      )
+
+      # If the payload comes as a bulk of sensors
+      if body_params.is_a?(Array) 
+        body_params.each { |sensor| create_sensor(sensor, @device.id) }
+      else
+        create_sensor(body_params, @device.id)
+      end
+
       status 201
       result = {
         :message => "Sensors were recorded"
@@ -140,7 +123,7 @@ class DevicesController < ApplicationController
   end
 
   get '/devices/sensors/alerts' do
-    sensors = Sensor.where('carbon_monoxide_level > ?', 9).where('safe = ?', false)
+    sensors = Sensor.where("carbon_monoxide_level > ? or device_health_status in ('needs_service','needs_new_filter','gas_leak')", 9).where("safe = ?", false)
     return json(sensors)
   end
 
@@ -159,4 +142,61 @@ class DevicesController < ApplicationController
       redirect_if_not_logged_in
     end
   end
+
+  def check_user_logged_in(params)
+    unless logged_in?
+      if params["creds"].blank?
+        result = {
+          :message => "You need to provide the field `creds` in order to create a sensor, using the following format Serial+Secret separated by the plus/+ sign, e.g 12345678+abcdef"
+        }
+        status 500
+        return json(result)
+      else
+        creds = params["creds"]
+        @user = User.find_by(username: creds)
+        if @user && @user.authenticate(creds)
+          session[:user_id] = @user.id
+        else
+          result = {
+            :message => "The creds provided don't belong to any user in the system"
+          }
+          status 500
+          return json(result)
+        end
+      end
+    end
+  end
+
+  def user_not_authenticated
+    result = {
+      error: "We can't find you, Please try again"
+    }
+    status 500
+    return json(result)
+  end
+
+  def is_sensor_invalid?(sensor_info)
+      return sensor_info["temperature"].blank? ||
+      sensor_info["air_humidity_percentage"].blank? ||
+      sensor_info["carbon_monoxide_level"].blank? ||
+      sensor_info["device_health_status"].blank? ||
+      sensor_info["created_at"].blank?
+  end
+
+  def create_sensor(sensor_info, device_id)
+    @sensor = Sensor.create(
+      temperature: sensor_info["temperature"],
+      air_humidity_percentage: sensor_info["air_humidity_percentage"],
+      carbon_monoxide_level: sensor_info["carbon_monoxide_level"],
+      device_health_status: sensor_info["device_health_status"],
+      created_at: sensor_info["created_at"],
+      safe: sensor_info["carbon_monoxide_level"] > 9 || device_health_status_to_check.include?(params["device_health_status"]) ? false : true,
+      device_id: device_id
+    )
+  end
+
+  def device_health_status_to_check
+    ['needs_service','needs_new_filter','gas_leak']
+  end
+
 end
