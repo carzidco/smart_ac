@@ -7,6 +7,16 @@ BE PoC exercise for Charlie Cordoba
 - `rake db:migrate`
 - `shotgun`
 
+## Production URL
+
+Hosted by Digital Ocean
+
+http://143.244.158.121
+### Test credentials
+
+"username": "SERIAL123456789+SECRET12345"
+"password": "SERIAL123456789+SECRET12345"
+
 ## Architecture
 
 The application was built using Ruby and Sinatra for the HTTP requests, Active Record as ORM, SQLite as Database.
