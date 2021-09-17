@@ -60,15 +60,7 @@ class DevicesController < ApplicationController
       flash[:message] = "Please don't leave blank content"
       redirect to "/devices/sensor/new"
     else
-      @sensor = Sensor.create(
-        temperature: params["temperature"], 
-        air_humidity_percentage: params["air_humidity_percentage"].to_f, 
-        carbon_monoxide_level: params["carbon_monoxide_level"].to_f,
-        device_health_status: params["device_health_status"],
-        created_at: Time.now,
-        device_id: params["device_id"],
-        safe: params["carbon_monoxide_level"].to_f > 9 || device_health_status_to_check.include?(params["device_health_status"])  ? false : true
-      )
+      @sensor = create_sensor(params, params["device_id"])
       redirect to "/devices"
     end
   end
@@ -107,7 +99,20 @@ class DevicesController < ApplicationController
   get '/devices/:serial_number/sensors' do
     if logged_in?
       @device = Device.find_by(serial_number: params["serial_number"])
-      @sensors = @device.sensors
+      @sensors = []
+      @device.sensors.each do |s|
+        sensor = {
+          :id => s.id,
+          :temperature => s.temperature,
+          :air_humidity_percentage => s.air_humidity_percentage,
+          :carbon_monoxide_level => s.carbon_monoxide_level,
+          :device_health_status => s.device_health_status,
+          :created_at => s.created_at,
+          :status => get_sensor_status_by_health_status(s),
+          :risky => (device_health_status_to_check.include?(s.device_health_status) || s.carbon_monoxide_level > 9) && !s.safe
+        }
+        @sensors << sensor
+      end
       erb :'devices/device_sensors'
     else
       redirect_if_not_logged_in
@@ -135,7 +140,20 @@ class DevicesController < ApplicationController
 
   get '/sensors' do
     if logged_in?
-      @sensors = Sensor.all
+      @sensors = []
+      Sensor.all.each do |s|
+        sensor = {
+          :id => s.id,
+          :temperature => s.temperature,
+          :air_humidity_percentage => s.air_humidity_percentage,
+          :carbon_monoxide_level => s.carbon_monoxide_level,
+          :device_health_status => s.device_health_status,
+          :created_at => s.created_at,
+          :status => get_sensor_status_by_health_status(s),
+          :risky => (device_health_status_to_check.include?(s.device_health_status) || s.carbon_monoxide_level > 9) && !s.safe
+        }
+        @sensors << sensor
+      end
       erb :'devices/list_sensors'
     else
       redirect_if_not_logged_in
@@ -183,19 +201,30 @@ class DevicesController < ApplicationController
   end
 
   def create_sensor(sensor_info, device_id)
+    created_at = sensor_info["created_at"].present? ? sensor_info["created_at"] : Time.now
     @sensor = Sensor.create(
       temperature: sensor_info["temperature"],
       air_humidity_percentage: sensor_info["air_humidity_percentage"],
       carbon_monoxide_level: sensor_info["carbon_monoxide_level"],
       device_health_status: sensor_info["device_health_status"],
-      created_at: sensor_info["created_at"],
-      safe: sensor_info["carbon_monoxide_level"] > 9 || device_health_status_to_check.include?(params["device_health_status"]) ? false : true,
+      created_at: created_at,
+      safe: sensor_info["carbon_monoxide_level"] > 9 || device_health_status_to_check.include?(sensor_info["device_health_status"]) ? false : true,
       device_id: device_id
     )
   end
 
   def device_health_status_to_check
     ['needs_service','needs_new_filter','gas_leak']
+  end
+
+  def get_sensor_status_by_health_status(sensor)
+    if (device_health_status_to_check.include?(sensor.device_health_status) || sensor.carbon_monoxide_level > 9) && !sensor.safe
+      return "Check"
+    elsif (device_health_status_to_check.include?(sensor.device_health_status) || sensor.carbon_monoxide_level > 9) && sensor.safe
+      return "OK - Handled"
+    else
+      return "OK"
+    end
   end
 
 end
