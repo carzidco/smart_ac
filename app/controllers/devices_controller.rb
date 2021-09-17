@@ -60,7 +60,6 @@ class DevicesController < ApplicationController
       flash[:message] = "Please don't leave blank content"
       redirect to "/devices/sensor/new"
     else
-      binding.pry
       @sensor = Sensor.create(
         temperature: params["temperature"], 
         air_humidity_percentage: params["air_humidity_percentage"].to_f, 
